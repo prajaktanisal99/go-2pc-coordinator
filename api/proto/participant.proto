@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package participant;
+
+// The Go package name where the generated code will live
+option go_package = "github.com/prajaktanisal99/go-2pc/api/proto";
+
+service ParticipantService {
+  // Phase 1
+  rpc Prepare (PrepareRequest) returns (PrepareResponse);
+  // Phase 2
+  rpc Commit (CommitRequest) returns (CommitResponse);
+  rpc Rollback (RollbackRequest) returns (RollbackResponse);
+}
+
+message PrepareRequest {
+  string tx_id = 1;
+}
+
+message PrepareResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message CommitRequest {
+  string tx_id = 1;
+}
+
+message CommitResponse {
+  bool success = 1;
+}
+
+message RollbackRequest {
+  string tx_id = 1;
+}
+
+message RollbackResponse {
+  bool success = 1;
+}

@@ -1,12 +1,57 @@
 version: '3.8'
+
 services:
+  # --- Databases ---
   postgres:
     image: postgres:15
     environment:
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
+
   redis:
     image: redis:7
     ports:
       - "6379:6379"
+
+  # --- Participant Services ---
+  pg-participant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: pg-participant
+    environment:
+      DATABASE_URL: "postgres://postgres:password@postgres:5432/postgres?sslmode=disable"
+    depends_on:
+      - postgres
+    ports:
+      - "50051:50051"
+
+  rd-participant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: rd-participant
+    environment:
+      REDIS_ADDR: "redis:6379"
+    depends_on:
+      - redis
+    ports:
+      - "50052:50052"
+
+  # --- The Coordinator ---
+  coordinator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: coordinator
+    environment:
+      REDIS_ADDR: "redis:6379"
+      PG_PARTICIPANT_ADDR: "pg-participant:50051"
+      RD_PARTICIPANT_ADDR: "rd-participant:50052"
+    depends_on:
+      - pg-participant
+      - rd-participant
